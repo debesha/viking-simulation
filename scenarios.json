@@ -1,0 +1,156 @@
+[
+  {
+    "id": "worst",
+    "label": "WORST",
+    "values": {
+      "payment_per_unit": 7000,
+      "rent_per_month": 5000,
+      "loan_recalled": true,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "base_scenario",
+    "label": "Base Scenario",
+    "values": {
+      "payment_per_unit": 7000,
+      "rent_per_month": 5000,
+      "loan_recalled": false,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "base_scenario_4000",
+    "label": "Base Scenario $4,000 rent",
+    "values": {
+      "payment_per_unit": 7000,
+      "rent_per_month": 4000,
+      "loan_recalled": false,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },  
+  {
+    "id": "base_scenario_4000_9_interest",
+    "label": "Base Scenario $4,000 rent 9% interest",
+    "values": {
+      "payment_per_unit": 7000,
+      "rent_per_month": 4000,
+      "loan_recalled": false,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 9,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },  
+  {
+    "id": "sandy_dream",
+    "label": "Sandy Dream",
+    "values": {
+      "payment_per_unit": 9500,
+      "rent_per_month": 4000,
+      "loan_recalled": false,
+      "sell_house_now": false,
+      "loan_interest_rate_percent": 9,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "sandy_dream_full_payment",
+    "label": "Full Payment, $5,000 rent",
+    "values": {
+      "payment_per_unit": 9500,
+      "rent_per_month": 5000,
+      "loan_recalled": false,
+      "sell_house_now": false,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "sandy_dream_full_payment_9_interest",
+    "label": "Full Payment, $5,000 rent, 9% interest",
+    "values": {
+      "payment_per_unit": 9500,
+      "rent_per_month": 5000,
+      "loan_recalled": false,
+      "sell_house_now": false,
+      "loan_interest_rate_percent": 9,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "split",
+    "label": "Split",
+    "values": {
+      "payment_per_unit": 8500,
+      "rent_per_month": 5000,
+      "loan_recalled": false,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "split_4000_rent",
+    "label": "Split $4,000 rent",
+    "values": {
+      "payment_per_unit": 8500,
+      "rent_per_month": 4000,
+      "loan_recalled": false,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "split_4000_rent_9_interest",
+    "label": "Split $4,000 rent, 9% interest",
+    "values": {
+      "payment_per_unit": 8500,
+      "rent_per_month": 4000,
+      "loan_recalled": false,
+      "sell_house_now": false,
+      "loan_interest_rate_percent": 9,
+      "rent_relationship": "stays",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  },
+  {
+    "id": "your_id_23here",
+    "label": "$7,000 per unit, $5,000 rent, 10% interest",
+    "values": {
+      "payment_per_unit": 7000,
+      "rent_per_month": 5000,
+      "loan_recalled": true,
+      "sell_house_now": true,
+      "loan_interest_rate_percent": 10,
+      "rent_relationship": "relocated",
+      "viking_sale_price": 160000,
+      "viking_other_costs_per_unit": 133000
+    }
+  }
+]

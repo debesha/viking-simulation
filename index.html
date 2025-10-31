@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viking Negotiation Model</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Viking Negotiation Model</h1>
+        <div class="header-actions">
+          <div class="scenario-select">
+            <select id="scenario_select">
+              <option value="">Select a scenario…</option>
+            </select>
+          </div>
+          <button id="copy_scenario_btn" class="icon-btn" type="button" title="Copy scenario JSON" aria-label="Copy scenario JSON">📋</button>
+          <button id="run_test_btn" class="icon-btn" type="button" title="Run equity test" aria-label="Run equity test">▶︎</button>
+        </div>
+      </div>
+
+      <section class="grid">
+        <div class="card">
+          <h2>Negotiated Inputs</h2>
+          <div class="form">
+            <label>
+              Payment per unit
+              <input type="number" id="payment_per_unit" />
+            </label>
+            <label>
+              Rent per month
+              <input type="number" id="rent_per_month" />
+            </label>
+            <div class="rent-radio-group">
+              <label class="radio"><input type="radio" name="rent_relationship" value="stays" checked /> Stays with Viking</label>
+              <label class="radio"><input type="radio" name="rent_relationship" value="relocated" /> Relocated</label>
+            </div>
+            <div class="row-inline">
+              <label class="inline">
+                <input type="checkbox" id="loan_recalled" /> Loan recalled now (200,000)
+              </label>
+              <label class="inline tight">
+                Interest rate
+                <input type="number" id="loan_interest_rate_percent" step="0.1" class="input-narrow" />
+              </label>
+            </div>
+            
+            <label class="inline">
+              <input type="checkbox" id="sell_house_now" /> Sell house now
+            </label>
+            <div class="form-sub">Assumptions</div>
+            <label>
+              Viking sale price (per unit)
+              <input type="number" id="viking_sale_price" />
+            </label>
+            <label>
+              Viking other costs per unit
+              <input type="number" id="viking_other_costs_per_unit" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <details id="case_constants">
+            <summary>Case Constants</summary>
+            <div class="form">
+              <label>
+                Units
+                <input type="number" id="units" />
+              </label>
+              <label>
+                Contract base per unit
+                <input type="number" id="contract_base_per_unit" />
+              </label>
+              <label>
+                Invoice per unit
+                <input type="number" id="invoice_per_unit" />
+              </label>
+              <label>
+                Cash on hand
+                <input type="number" id="cash_on_hand" />
+              </label>
+              <label>
+                Lumber/Oak bill
+                <input type="number" id="oak_bill" />
+              </label>
+              <label>
+                Past due rent
+                <input type="number" id="past_due_rent" />
+              </label>
+              <label>
+                Loan callable amount
+                <input type="number" id="loan_callable_amount" />
+              </label>
+              <label>
+                Loan recovery rate (% on insolvency)
+                <input type="number" id="loan_recovery_rate_percent" />
+              </label>
+              <label>
+                House market value
+                <input type="number" id="house_market_value" />
+              </label>
+              <label>
+                House book value
+                <input type="number" id="house_book_value" />
+              </label>
+              <label>
+                House mortgage
+                <input type="number" id="house_mortgage" />
+              </label>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="grid results">
+        <div class="card" id="sandy_card">
+          <h2>Sandy Results</h2>
+          <div class="tabs"><button class="tab-btn active" data-tab="sandy_cf">Cash Flow Statement</button><button class="tab-btn" data-tab="sandy_bs">Balance Sheet</button></div>
+          <div id="sandy_cf" class="tab-panel active">
+          <table>
+            <tbody>
+              <tr>
+                <th class="sub" colspan="2">Inflows</th>
+              </tr>
+              <tr>
+                <th>Project revenue</th>
+                <td id="sandy_inflow_project"></td>
+              </tr>
+              <tr>
+                <th>House sale proceeds (gross)</th>
+                <td id="sandy_house_gross"></td>
+              </tr>
+              <tr>
+                <th class="sub" colspan="2">Outflows</th>
+              </tr>
+              
+              <tr>
+                <th>Oak bill</th>
+                <td id="sandy_oak_bill"></td>
+              </tr>
+              <tr>
+                <th>Rent debt</th>
+                <td id="sandy_rent_debt"></td>
+              </tr>
+              <tr>
+                <th>Mortgage payoff</th>
+                <td id="sandy_house_mortgage"></td>
+              </tr>
+              <tr>
+                <th>Loan repayment</th>
+                <td id="sandy_loan_repayment_now"></td>
+              </tr>
+              <tr>
+                <th>Rent</th>
+                <td id="sandy_rent_12m"></td>
+              </tr>
+              <tr>
+                <th>Loan interest</th>
+                <td id="sandy_interest_12m"></td>
+              </tr>
+              <tr>
+                <th>Loan principal (12-month)</th>
+                <td id="sandy_loan_principal_12m"></td>
+              </tr>
+              <tr>
+                <th class="sub" colspan="2">Balances</th>
+              </tr>
+              <tr>
+                <th>Start Balance</th>
+                <td id="sandy_start_balance"></td>
+              </tr>
+              <tr>
+                <th>End Balance</th>
+                <td id="sandy_end_balance"></td>
+              </tr>
+              <tr>
+                <th>Projection horizon (months)</th>
+                <td id="projection_horizon"></td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          <div id="sandy_bs" class="tab-panel">
+            <table>
+              <tbody>
+                <tr>
+                  <th class="sub" colspan="2">Assets</th>
+                </tr>
+                <tr>
+                  <th>Cash</th>
+                  <td id="sandy_bs_cash"></td>
+                </tr>
+                <tr>
+                  <th>House (book value)</th>
+                  <td id="sandy_bs_house_book"></td>
+                </tr>
+                <tr>
+                  <th class="sub" colspan="2">Liabilities</th>
+                </tr>
+                <tr>
+                  <th>Loan payable</th>
+                  <td id="sandy_bs_loan_payable"></td>
+                </tr>
+                <tr>
+                  <th>Interest payable</th>
+                  <td id="sandy_bs_interest_payable"></td>
+                </tr>
+                <tr>
+                  <th>Rent payable (12-month)</th>
+                  <td id="sandy_bs_rent_payable"></td>
+                </tr>
+                <tr>
+                  <th class="sub" colspan="2">Equity</th>
+                </tr>
+                <tr>
+                  <th>Total equity</th>
+                  <td id="sandy_bs_equity"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="viking_card">
+          <h2>Viking Results</h2>
+          <div class="tabs"><button class="tab-btn active" data-tab="viking_cf">Cash Flow Statement</button><button class="tab-btn" data-tab="viking_bs">Balance Sheet</button></div>
+          <div id="viking_cf" class="tab-panel active">
+          <table>
+            <tbody>
+              <tr>
+                <th class="sub" colspan="2">Inflows</th>
+              </tr>
+              <tr>
+                <th>Sales revenue</th>
+                <td id="viking_sales_revenue"></td>
+              </tr>
+              <tr>
+                <th>Rent income (12-month)</th>
+                <td id="viking_rent_receipts_12m"></td>
+              </tr>
+              <tr>
+                <th>Loan Principal</th>
+                <td id="viking_loan_principal_repaid_now"></td>
+              </tr>
+              <tr>
+                <th>Repaid rent debt</th>
+                <td id="viking_repaid_rent_debt"></td>
+              </tr>
+              <tr>
+                <th>Interest received (12 months)</th>
+                <td id="viking_interest_12m"></td>
+              </tr>
+              <tr>
+                <th class="sub" colspan="2">Outflows</th>
+              </tr>
+              <tr>
+                <th>Condo costs</th>
+                <td id="viking_other_costs_total"></td>
+              </tr>
+              <tr>
+                <th>Payment to Sandy</th>
+                <td id="viking_payment_to_sandy"></td>
+              </tr>
+              <tr>
+                <th class="sub" colspan="2">Balances</th>
+              </tr>
+              <tr>
+                <th>Start Balance</th>
+                <td id="viking_start_balance"></td>
+              </tr>
+              <tr>
+                <th>End Balance</th>
+                <td id="viking_end_balance"></td>
+              </tr>
+              <tr>
+                <th>Total benefit</th>
+                <td id="viking_total_benefit"></td>
+              </tr>
+              <tr>
+                <th>Projection horizon (months)</th>
+                <td id="projection_horizon_viking"></td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          <div id="viking_bs" class="tab-panel">
+            <table>
+              <tbody>
+                <tr>
+                  <th class="sub" colspan="2">Assets</th>
+                </tr>
+                <tr>
+                  <th>Cash</th>
+                  <td id="viking_bs_cash"></td>
+                </tr>
+                <tr>
+                  <th>Loan receivable</th>
+                  <td id="viking_bs_loan_receivable"></td>
+                </tr>
+                <tr>
+                  <th>Rent receivable (12-month)</th>
+                  <td id="viking_bs_rent_receivable"></td>
+                </tr>
+                <tr>
+                  <th class="sub" colspan="2">Liabilities</th>
+                </tr>
+                <tr>
+                  <th>Total liabilities</th>
+                  <td id="viking_bs_liabilities"></td>
+                </tr>
+                <tr>
+                  <th class="sub" colspan="2">Equity</th>
+                </tr>
+                <tr>
+                  <th>Total equity</th>
+                  <td id="viking_bs_equity"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      
+
+      <footer>
+        <small>All values in USD. Edits update results instantly.</small>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
+
+
