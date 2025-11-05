@@ -6,6 +6,10 @@ This project is part of preparation for a **Negotiation & Bargaining** class at 
 
 **🌐 Hosted Simulation:** [https://debesha.github.io/viking-simulation/](https://debesha.github.io/viking-simulation/)
 
+## Disclaimer
+
+This tool was developed using [Cursor](https://cursor.sh) in vibe-coding mode.
+
 ## Case Study Overview
 
 This financial simulation tool models a negotiation scenario between two parties: **Sandy** (a contractor/subcontractor) and **Viking** (a developer/project owner). The case involves financial arrangements including unit construction payments, rental agreements, loan obligations, and potential asset sales.
@@ -35,16 +39,10 @@ This financial simulation tool models a negotiation scenario between two parties
 
 2. **Start a local HTTP server using Python:**
    
-   For Python 3:
    ```bash
-   python3 -m http.server 8000
+   python -m http.server 8000
    ```
    
-   Or for Python 2:
-   ```bash
-   python -m SimpleHTTPServer 8000
-   ```
-
 3. **Open your web browser** and navigate to:
    ```
    http://localhost:8000
@@ -72,5 +70,4 @@ Then access the application at `http://localhost:8080`
 - `app.js` - Simulation logic and UI interactions
 - `styles.css` - Styling
 - `scenarios.json` - Predefined negotiation scenarios
-
 
