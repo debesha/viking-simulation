@@ -2,7 +2,7 @@
 
 ## Context
 
-This project is part of preparation for a **Negotiation & Bargaining** class at London Business School (LBS), led by Professor David Loschelder, and prepared by Dima Malyshenko, eMBA student, London stream EMBALS_2026.
+This project is part of preparation for a **Negotiation & Bargaining** class at [London Business School](https://london.edu) (LBS), led by [Professor David Loschelder](https://www.leuphana.de/en/institutes/imo/persons/david-loschelder.html), and prepared by [Dima Malyshenko](https://www.linkedin.com/in/dima-malyshenko/) (eMBA student, London stream EMBALS_2026).
 
 **🌐 Hosted Simulation:** [https://debesha.github.io/viking-simulation/](https://debesha.github.io/viking-simulation/)
 
