@@ -46,11 +46,13 @@ function simulate(i) {
   // Net cash after optional/forced house sale
   const sandy_net_cash = sandy_net_before_house + house_inflow;
   const shortfall = sandy_net_cash < 0 ? -sandy_net_cash : 0;
-  const projectionMonths = 12;
-  const sandy_interest_12m = (!i.loan_recalled && sandy_net_cash >= 0) ? (i.loan_callable_amount * (i.loan_interest_rate_percent / 100)) : 0;
-  const sandy_rent_12m = (i.rent_per_month * projectionMonths);
+  // If house sale is forced due to insolvency, no 12-month projection
+  const projectionMonths = force_house_sale ? 0 : 12;
+  const sandy_interest_12m = (!i.loan_recalled && sandy_net_cash >= 0 && !force_house_sale) ? (i.loan_callable_amount * (i.loan_interest_rate_percent / 100)) : 0;
+  // If house sale is forced, no rent obligations
+  const sandy_rent_12m = force_house_sale ? 0 : (i.rent_per_month * projectionMonths);
   // Loan principal repayment: if not recalled, it's due at end of period (projected)
-  const sandy_loan_principal_12m = (!i.loan_recalled && sandy_net_cash >= 0) ? i.loan_callable_amount : 0;
+  const sandy_loan_principal_12m = (!i.loan_recalled && sandy_net_cash >= 0 && !force_house_sale) ? i.loan_callable_amount : 0;
 
   const viking_base_payment_total = i.units * i.contract_base_per_unit;
   const viking_actual_payment_total = i.units * i.payment_per_unit;
@@ -67,12 +69,20 @@ function simulate(i) {
   const revenue_uplift_vs_base = 0;
   const viking_delta_score = -viking_extra_cash_out - viking_other_costs_total;
 
-  const viking_rent_receipts_12m = (i.rent_relationship === 'stays' && avoids_bankruptcy) ? (i.rent_per_month * projectionMonths) : 0;
-  const viking_repaid_rent_debt = avoids_bankruptcy ? i.past_due_rent : 0;
-  const viking_interest_12m = (!i.loan_recalled && avoids_bankruptcy) ? (i.loan_callable_amount * (i.loan_interest_rate_percent / 100)) : 0;
-  const viking_loan_principal_repaid_now = avoids_bankruptcy
-    ? (i.loan_recalled ? i.loan_callable_amount : 0)
-    : (i.loan_callable_amount * (i.loan_recovery_rate_percent / 100));
+  // If house sale is forced, no rent income (rent relationship is broken due to insolvency)
+  const viking_rent_receipts_12m = (force_house_sale || !(i.rent_relationship === 'stays' && avoids_bankruptcy)) ? 0 : (i.rent_per_month * projectionMonths);
+  // If house sale is forced or Sandy is insolvent, apply recovery rate to past due rent debt (same as loan)
+  const viking_repaid_rent_debt = (force_house_sale || !avoids_bankruptcy)
+    ? (i.past_due_rent * (i.loan_recovery_rate_percent / 100))
+    : i.past_due_rent;
+  // If house sale is forced, no 12-month interest projection
+  const viking_interest_12m = (force_house_sale || !(!i.loan_recalled && avoids_bankruptcy)) ? 0 : (i.loan_callable_amount * (i.loan_interest_rate_percent / 100));
+  // If house sale is forced due to insolvency, apply loan recovery rate immediately (regardless of loan_recalled status)
+  const viking_loan_principal_repaid_now = force_house_sale
+    ? (i.loan_callable_amount * (i.loan_recovery_rate_percent / 100))
+    : avoids_bankruptcy
+      ? (i.loan_recalled ? i.loan_callable_amount : 0)
+      : (i.loan_callable_amount * (i.loan_recovery_rate_percent / 100));
 
   // Balance sheet (period end)
   const bs_cash = sandy_net_cash; // using end balance as period-end cash
@@ -80,10 +90,10 @@ function simulate(i) {
   const bs_house = (house_inflow > 0) ? 0 : i.house_book_value;
   // Loan payable: outstanding if not recalled and Sandy remains solvent; else zero
   const bs_loan_payable = i.loan_recalled ? 0 : (sandy_net_cash >= 0 ? i.loan_callable_amount : 0);
-  // Interest payable: accrue 12-month interest when loan not recalled and Sandy solvent
-  const bs_interest_payable = (!i.loan_recalled && sandy_net_cash >= 0) ? (i.loan_callable_amount * (i.loan_interest_rate_percent / 100)) : 0;
-  // Rent payable: accrue 12-month rent if Sandy solvent (projection horizon = 12)
-  const bs_rent_payable = (sandy_net_cash >= 0) ? (i.rent_per_month * projectionMonths) : 0;
+  // Interest payable: accrue 12-month interest when loan not recalled and Sandy solvent (and not forced sale)
+  const bs_interest_payable = (!i.loan_recalled && sandy_net_cash >= 0 && !force_house_sale) ? (i.loan_callable_amount * (i.loan_interest_rate_percent / 100)) : 0;
+  // Rent payable: accrue 12-month rent if Sandy solvent and not forced sale
+  const bs_rent_payable = (sandy_net_cash >= 0 && !force_house_sale) ? (i.rent_per_month * projectionMonths) : 0;
   const bs_equity = bs_cash + bs_house - bs_loan_payable - bs_interest_payable - bs_rent_payable;
 
   return {
@@ -137,11 +147,11 @@ function simulate(i) {
     sandy_bs_equity: bs_equity,
     viking_bs_cash: viking_net_cash + viking_rent_receipts_12m + viking_repaid_rent_debt + viking_interest_12m + viking_loan_principal_repaid_now,
     viking_bs_loan_receivable: (!i.loan_recalled && avoids_bankruptcy) ? i.loan_callable_amount : 0,
-    viking_bs_rent_receivable: (i.rent_relationship === 'stays' && avoids_bankruptcy) ? (i.rent_per_month * projectionMonths) : 0,
+    viking_bs_rent_receivable: (force_house_sale || !(i.rent_relationship === 'stays' && avoids_bankruptcy)) ? 0 : (i.rent_per_month * projectionMonths),
     viking_bs_liabilities: 0,
     viking_bs_equity: (viking_net_cash + viking_rent_receipts_12m + viking_repaid_rent_debt + viking_interest_12m + viking_loan_principal_repaid_now)
-      + ((!i.loan_recalled && avoids_bankruptcy) ? i.loan_callable_amount : 0)
-      + ((i.rent_relationship === 'stays' && avoids_bankruptcy) ? (i.rent_per_month * projectionMonths) : 0),
+      + ((!i.loan_recalled && avoids_bankruptcy && !force_house_sale) ? i.loan_callable_amount : 0)
+      + ((force_house_sale || !(i.rent_relationship === 'stays' && avoids_bankruptcy)) ? 0 : (i.rent_per_month * projectionMonths)),
   };
 }
 
@@ -249,6 +259,7 @@ function render(results) {
     const outflowIds = new Set([
       'sandy_oak_bill',
       'sandy_rent_debt',
+      'sandy_house_mortgage',
       'sandy_loan_repayment_now',
       'sandy_rent_12m',
       'sandy_interest_12m',
@@ -307,12 +318,48 @@ function render(results) {
 
   // Reflect enforced house sale in the input checkbox UI
   const sellHouseEl = document.getElementById('sell_house_now');
-  if (sellHouseEl) {
+  const sellHouseLabel = sellHouseEl ? sellHouseEl.closest('label') : null;
+  if (sellHouseEl && sellHouseLabel) {
+    // Find the text node - it's the next sibling of the input element
+    let textNode = sellHouseEl.nextSibling;
+    // If not found as nextSibling, search in label's childNodes
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      const childNodes = Array.from(sellHouseLabel.childNodes);
+      const inputIndex = childNodes.indexOf(sellHouseEl);
+      if (inputIndex >= 0 && inputIndex < childNodes.length - 1) {
+        textNode = childNodes[inputIndex + 1];
+      }
+    }
+    // If still not found, try finding any text node in the label
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      textNode = Array.from(sellHouseLabel.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+    }
+    
     if (results.house_sale_forced) {
       sellHouseEl.checked = true;
       sellHouseEl.disabled = true;
+      // Update label text when forced
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        textNode.textContent = 'House sold (forced by insolvency)';
+      } else {
+        // Fallback: update the label's textContent (less ideal but works)
+        const currentText = sellHouseLabel.textContent.trim();
+        if (currentText.includes('Sell house now')) {
+          sellHouseLabel.textContent = sellHouseLabel.textContent.replace('Sell house now', 'House sold (forced by insolvency)');
+        }
+      }
     } else {
       sellHouseEl.disabled = false;
+      // Restore original label text when not forced
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        textNode.textContent = 'Sell house now';
+      } else {
+        // Fallback: update the label's textContent
+        const currentText = sellHouseLabel.textContent.trim();
+        if (currentText.includes('House sold (forced by insolvency)')) {
+          sellHouseLabel.textContent = sellHouseLabel.textContent.replace('House sold (forced by insolvency)', 'Sell house now');
+        }
+      }
       // do not override user's current checked state when not forced
     }
   }
@@ -528,6 +575,74 @@ async function initScenarios() {
     // If fetch fails (e.g., opened via file://), leave dropdown empty
   }
 }
+
+// TEMPORARY TEST FUNCTION - Remove after testing
+function testLabelChange() {
+  console.log('Testing label change logic...');
+  const sellHouseEl = document.getElementById('sell_house_now');
+  const sellHouseLabel = sellHouseEl ? sellHouseEl.closest('label') : null;
+  
+  if (!sellHouseEl || !sellHouseLabel) {
+    console.error('Could not find sell house element or label');
+    return;
+  }
+  
+  console.log('Found elements:', { sellHouseEl, sellHouseLabel });
+  console.log('Label childNodes:', Array.from(sellHouseLabel.childNodes));
+  console.log('Input nextSibling:', sellHouseEl.nextSibling);
+  
+  // Test finding text node
+  let textNode = sellHouseEl.nextSibling;
+  console.log('Text node from nextSibling:', textNode);
+  
+  if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+    const childNodes = Array.from(sellHouseLabel.childNodes);
+    const inputIndex = childNodes.indexOf(sellHouseEl);
+    console.log('Input index in childNodes:', inputIndex);
+    if (inputIndex >= 0 && inputIndex < childNodes.length - 1) {
+      textNode = childNodes[inputIndex + 1];
+      console.log('Text node from childNodes:', textNode);
+    }
+  }
+  
+  if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+    textNode = Array.from(sellHouseLabel.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+    console.log('Text node from search:', textNode);
+  }
+  
+  console.log('Final text node:', textNode);
+  console.log('Current label text:', sellHouseLabel.textContent);
+  
+  // Test forced scenario
+  const testInputs = {
+    ...getInputsFromDOM(),
+    payment_per_unit: 1000, // Very low to force insolvency
+    cash_on_hand: 0,
+    oak_bill: 700000,
+    past_due_rent: 10000,
+    loan_recalled: true,
+    loan_callable_amount: 200000,
+  };
+  
+  const testResults = simulate(testInputs);
+  console.log('Test results - house_sale_forced:', testResults.house_sale_forced);
+  console.log('Test results - sandy_end_balance:', testResults.sandy_end_balance);
+  
+  // Manually trigger the label update
+  if (testResults.house_sale_forced) {
+    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+      textNode.textContent = 'House sold (forced by insolvency)';
+      console.log('Label updated via textNode');
+    } else {
+      sellHouseLabel.textContent = sellHouseLabel.textContent.replace('Sell house now', 'House sold (forced by insolvency)');
+      console.log('Label updated via textContent replace');
+    }
+    console.log('Label after update:', sellHouseLabel.textContent);
+  }
+}
+
+// Make test function available globally for console testing
+window.testLabelChange = testLabelChange;
 
 window.addEventListener('DOMContentLoaded', () => {
   setDefaults();
